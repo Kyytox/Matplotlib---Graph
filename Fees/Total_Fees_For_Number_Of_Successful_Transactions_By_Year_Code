@@ -1,0 +1,58 @@
+# The total amount of Bitcoin fees for number of successful transactions by Year
+import numpy as np
+import pandas as pd
+from datetime import datetime
+import requests
+import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
+import numpy as np
+import pandas as pd
+import requests
+# Function for format yLabel in Graph
+def millions(x, pos):
+    return '{:1.0f}M'.format(x*1e-6)
+formatterMil = FuncFormatter(millions)
+# Variables
+API_KEY = '2D0Dz5GSWhWqx35fu09qkQytwPa'
+pathAPI = 'https://api.glassnode.com/v1/metrics/fees/volume_sum'
+xlabelName = ['2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022']
+backColor = '#001219'
+backGraphColor = '#ADB5BD'
+barBTCcolor = '#FF0000'
+
+# API total Fees Bitcoin by month
+res = requests.get(pathAPI, params={'a': 'BTC','i': '1month', 'api_key': API_KEY})
+# convert to pandas dataframe and collect min/max values
+df = pd.read_json(res.text)
+df['t'] = pd.to_datetime(df["t"], unit="s")
+df = df.groupby(pd.Grouper(key='t', axis=0, freq='Y')).sum().fillna(0.0).astype(int)
+dfMax = df['v'].max()
+
+# API total Fees Bitcoin by month
+res = requests.get('https://api.glassnode.com/v1/metrics/transactions/count', params={'a': 'BTC','i': '1month', 'api_key': API_KEY})
+# convert to pandas dataframe and collect min/max values
+df2 = pd.read_json(res.text)
+df2["t"] = pd.to_datetime(df2["t"], unit="s")
+df2 = df2.groupby(pd.Grouper(key='t', axis=0, freq='Y')).sum().fillna(0.0).astype(int)
+df2Max = df2['v'].max()
+df2Min = df2['v'].min()
+
+fig, ax = plt.subplots(figsize=(13, 10))
+plt.scatter(df2['v'], df['v'],s=40, color=barBTCcolor)
+fig.patch.set_facecolor(backColor)
+ax.set_facecolor(backGraphColor)
+plt.title('Total amount of Fees (in BTC) / Number of transaction by Year', loc ='center',fontweight='bold', fontsize='16', color='w')
+plt.ylabel('Total amount of Fees (in BTC)', fontweight='bold', color = 'w', fontsize='14', horizontalalignment='center')
+plt.xlabel('Number of transactions (Millions)', fontweight='bold', color = 'w', fontsize='12', horizontalalignment='center')
+plt.xticks(np.arange(df2Min, df2Max+10000000, 10000000))
+plt.yticks(np.arange(0, dfMax, 10000))
+ax.grid(axis = 'x', color='black');
+ax.grid(axis = 'y', color='grey');
+ax.tick_params(colors='w', labelsize=12)
+#Annotations
+for i in range(len(df2)):
+  if i == 0: 
+    plt.annotate(xlabelName[0], (df2['v'][0]+600000, df['v'][0]-2500), fontsize='11', fontweight='bold')
+  else:
+    plt.annotate(xlabelName[i], (df2['v'][i]+600000, df['v'][i]-500), fontsize='11', fontweight='bold')
+ax.xaxis.set_major_formatter(formatterMil)
