@@ -3,7 +3,7 @@
 
 
 ![alt text](https://github.com/Kyytox/Matplotlib---Graph/blob/master/Hashrate/Share%20Hashrate%20By%20Country/ShareGlobalHashrate_2022-01-01.png)
-<br><br><br>
+<br></br><br></br>
 ![alt text](https://github.com/Kyytox/Matplotlib---Graph/blob/master/Hashrate/Share%20Hashrate%20By%20Country/EstimatedHashratebyCountry_2022-01-01.png)
 ![alt text](https://github.com/Kyytox/Matplotlib---Graph/blob/master/Hashrate/Map%20Hashrate/Map_Hshrate.png)
 ![alt text](https://github.com/Kyytox/Matplotlib---Graph/blob/master/ASIC's/Market_Share.png)
