@@ -15,3 +15,4 @@
 ![alt text](https://github.com/Kyytox/Matplotlib---Graph/blob/master/Address/Total%20Address/Evolution_Total_Add.png)
 ![alt text](https://github.com/Kyytox/Matplotlib---Graph/blob/master/Address/Total%20-%20Active%20Address%20BTC/Total_Active_Add_BTC.png)
 ![alt text](https://github.com/Kyytox/Matplotlib---Graph/blob/master/Address/Balance%20Address%20BTC/Balance_Add_BTC.png)
+![alt text](https://github.com/Kyytox/Matplotlib---Graph/blob/master/Address/New%20Add%20Btc%20By%20Month/New_Add_Btc_By_Month.png)
