@@ -1,0 +1,28 @@
+# Map Hashrate
+import folium
+import pandas as pd
+
+colors=['#4cc9f0','#4895ef', '#4361ee', '#3f37c9', '#3a0ca3', '#560bad', '#b5179e', '#f72585', '#ff0054', '#EDEDBF']
+# Make an empty map
+m = folium.Map(location=[20,0], tiles="Cartodbdark_matter", zoom_start=2.4)
+# Make a data frame with dots to show on the map
+data = pd.DataFrame({
+   'lon':[-100, 105, 68, -70, 50, 10, 102, -7.5, 55],
+   'lat':[40, 33, 48, 53, 60, 52, 4, 53, 32],
+   'name':['United States', 'Mainland China', 'Kazakhstan', 'Canada', 'Russia', 'Germany', 'Malaysia', 'Ireland', 'Iran Islamic Rep'],
+   'value':[37.84, 21.11, 13.22, 6.48, 4.66, 3.06, 2.51, 1.97, 0.12],
+   'colors':['#4cc9f0','#4895ef', '#4361ee', '#3a0ca3', '#560bad', '#b5179e', '#f72585', '#ff0054', '#EDEDBF']
+}, dtype=str)
+
+# add marker one by one on the map
+for i in range(0,len(data)):
+   folium.Circle(
+      location=[data.iloc[i]['lat'], data.iloc[i]['lon']],
+      popup=data.iloc[i]['name'],
+      radius=float(data.iloc[i]['value'])*50000,
+      color=data.iloc[i]['colors'],
+      fill=True,
+      fill_color=data.iloc[i]['colors'],
+   ).add_to(m)
+folium.map.LayerControl(position='topright', collapsed=True, autoZIndex=True)
+# Show the map again
