@@ -1,0 +1,51 @@
+# Balances Addresses
+# Graph of balance addresses.
+import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
+import numpy as np
+import pandas as pd
+import requests
+# Variables
+API_KEY = '2D0Dz5GSWhWqx35fu09qkQytwPa'
+pathAPI = 'https://api.glassnode.com/v1/metrics/addresses/'
+# 2021-08-01 02:00:00 (UnixTime)
+# for collect all data until August 2021, because API noPremium 
+unixTimeUntil = 1627776000
+listUrlApi = ['non_zero_count', 'min_point_zero_1_count', 'min_point_1_count', 'min_1_count', 'min_10_count', 'min_100_count', 'min_1k_count', 'min_10k_count']
+listLabel = ['= 0','>= 0.01','>= 0.1','>= 1','>= 10','>= 100','>= 1k', '>= 10k']
+listData = []
+i = 0
+backColor = '#001219'
+backGraphColor = '#ADB5BD'
+colorBarBtcTotal = '#e09f3e'
+colorBarBtcActive = '#c1121f'
+# Function for format yLabel in Graph
+def millions(x, pos):
+    return '{:1.0f}M'.format(x*1e-6)
+formatterMil = FuncFormatter(millions)
+for urlApi in listUrlApi:
+  # API New Addresses Bitcoin by month
+  res = requests.get(pathAPI + urlApi, params={'a': 'BTC','s': unixTimeUntil-260000, 'u': unixTimeUntil, 'i': '24h', 'api_key': API_KEY})
+  # convert to pandas dataframe and collect min/max values
+  df = pd.read_json(res.text, convert_dates=['t'])
+  dfMax = df.iloc[-1,1]
+  listData.append(dfMax)
+  i = i + 1
+fig, ax = plt.subplots(figsize=(19, 8))
+fig.patch.set_facecolor(backColor)
+plt.barh(listLabel,listData, color=colorBarBtcTotal)
+plt.ylabel('Balances', fontweight='bold', color = 'w', fontsize='14', horizontalalignment='center')
+plt.xlabel('Number of Addresses', fontweight='bold', color = 'w', fontsize='14', horizontalalignment='center')
+plt.title('Number of unique addresses holding x coins at 2021-08-01', loc ='left',fontweight='bold', fontsize='17', color='w')
+# Add annotation to bars
+for i in ax.patches:
+  plt.text(i.get_width()+80000, 
+           i.get_y()+0.345,
+           str(round((i.get_width()), 2)),
+           fontsize = 9,
+           fontweight ='bold',
+           color ='black')
+ax.set_facecolor(backGraphColor)  
+ax.xaxis.set_major_formatter(formatter_mil)
+ax.tick_params(direction='out', length=6, width=2, colors='w', grid_color='w', grid_alpha=0.5)
+plt.show()
