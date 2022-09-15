@@ -1,0 +1,45 @@
+# New Addresses Bitcoin
+# The number of unique addresses that appeared for the first time in a transaction in the network.
+import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
+import numpy as np
+import pandas as pd
+import requests
+
+# Variables
+API_KEY = 'xxxxx'
+pathAPI = 'https://api.glassnode.com'
+# 2022-08-01 02:00:00 (UnixTime)
+# for collect all data of july 
+unixTimeLastMonth = 1659312000
+# Function for format yLabel in Graph
+def millions(x, pos):
+    return '{:1.1f}M'.format(x*1e-6)
+formatter_mil = FuncFormatter(millions)
+# API New Addresses Bitcoin by month
+res = requests.get(pathAPI + '/v1/metrics/addresses/new_non_zero_count', 
+                   params={'a': 'BTC', 'u': unixTimeLastMonth, 'i': '1month', 'api_key': API_KEY})
+# convert to pandas dataframe and collect min/max values
+df = pd.read_json(res.text, convert_dates=['t'])
+dfMax = df['v'].max()
+dfMin = df['v'].min()
+# Convert to string
+df['t'] = [item.strftime('%b %y') for item in df['t']]
+df['t'][::12] = [item[-2:] for item in df['t'][::12]]
+# # Plot
+df.plot.bar(x='t',
+            y='v',
+            title='New Addresses Bitcoin By Month',
+            xlabel="Month",
+            ylabel="New Addresses",
+            rot=90,
+            width=0.7,
+            figsize=(25,9),
+            color='#bf900A')
+plt.yticks(np.arange(dfMin, dfMax, 1000000))
+plt.legend(["New Addresses create"], loc='upper center');
+plt.grid(axis = 'y');
+ax = plt.axes()
+ax.set_facecolor('#F4D6CC')
+ax.yaxis.set_major_formatter(formatter_mil)
+plt.show()
