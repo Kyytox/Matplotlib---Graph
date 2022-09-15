@@ -120,3 +120,11 @@ for bar in ax.patches:
  
   i=i+1
 plt.show()
+
+
+
+![alt text](https://github.com/Kyytox/Matplotlib---Graph/blob/master/Address/New_Add_Btc_By_Year.png)
+![alt text](https://github.com/Kyytox/Matplotlib---Graph/blob/master/Address/New_Add_Btc_Eth_By_Year.png)
+![alt text](https://github.com/Kyytox/Matplotlib---Graph/blob/master/Address/New_Add_Eth_By_Year.png)
+
+
