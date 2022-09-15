@@ -1,0 +1,116 @@
+from operator import concat
+# Share of Asics (number of machines) between Company
+import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.patches import ConnectionPatch
+import numpy as np
+ListCompany = ['ASICminer', 'Bitfily', 'Bitmain', 'Canaan', 'Ebang', 'Innosilicon', 'MicroBT', 'StrongU', 'Other']
+ListNbAsics = []
+ListOtherCompany = ['Pantech', 'Holic', 'Halong', 'GMO', 'Bitfury', 'Aladin Miner', 'Aisen']
+ListNbAsicsOther = []
+backColor = '#001219'
+backGraphColor = '#ADB5BD'
+colors=['#300900','#510903', '#8c0004', '#b8091b', '#f50000', '#dc2f02', '#e85d04', '#e0b000', '#fdc500']
+explode = (0,0,0.05,0,0,0,0,0,0.2)
+# Read CSV
+df = pd.read_csv('dataAsics.csv')
+# Convert date
+df['Date_release'] = pd.to_datetime(df["Date_release"])
+# Conut number of Asics creatzed by Company 
+for company in ListCompany: 
+  if company != 'Other':
+    ListNbAsics.append(df['Company'].value_counts()[company]) 
+  else:
+    ListNbAsics.append(11)
+for otherCompany in ListOtherCompany: 
+  if otherCompany != 'Other':
+    ListNbAsicsOther.append(df['Company'].value_counts()[otherCompany]) 
+
+# Graphs 
+# make figure and assign axis objects
+fig = plt.figure(figsize=(20,10))
+ax1 = fig.add_subplot(111)
+ax2 = fig.add_subplot(122)
+fig.subplots_adjust(wspace=4)
+fig.patch.set_facecolor(backColor)
+
+# Graph Pie
+wedges, *_ = ax1.pie(ListNbAsics,
+        labels = ListCompany,
+        autopct ='%1.1f%%',
+        shadow = True,
+        startangle = 20,
+        colors=colors,
+        explode=explode,
+        wedgeprops = {'linewidth': 0.7, 'edgecolor': "w"},
+        pctdistance=0.80, labeldistance=1.03,
+        textprops = dict(color ="w", fontsize='13',fontweight ='bold')
+        )
+ax1.set_title('ASICs Market Share (number of ASICs)', loc ='center',fontweight='bold', fontsize='18', color='w')
+
+# Graph bar of Pie
+xpos = 0
+bottom = 0
+width = 0.1
+colors2 = ["#112311", "#123411","#0e600e", "#0a8b0a", "#08a808","#05c505","#03e203"]
+for j in range(len(ListNbAsicsOther)):
+    height = ListNbAsicsOther[j]
+    ax2.bar(xpos, height, width, bottom=bottom, color=colors2[j])
+    ypos = bottom + ax2.patches[j].get_height()/2
+    bottom += height
+    # text = str(ListNbAsicsOther[j]) + ' ' + '(' + str(round((ax2.patches[j].get_height() / ListNbAsics[8]) * 100, 2)) + '%)' 
+    text = str(round((ax2.patches[j].get_height() / ListNbAsics[8]) * 100, 2)) + '%' 
+    ax2.text(xpos, ypos, text, ha='center', fontsize='12', color='w')
+ax2.set_facecolor(backColor)
+ax2.grid(False)
+# remove border 
+ax2.spines["top"].set_visible(False)
+ax2.spines["right"].set_visible(False)
+ax2.spines["left"].set_visible(False)
+ax2.spines["bottom"].set_visible(False)
+# For X-axis
+ax2.xaxis.set_ticklabels([])
+# For Y-axis
+ax2.yaxis.set_ticklabels([])
+ax2.legend(ListOtherCompany, title ="Companies", loc ="upper left", bbox_to_anchor =(1, 0, 0.5, 1))
+
+# use ConnectionPatch to draw lines between the two plots
+theta1, theta2 = wedges[8].theta1, wedges[8].theta2
+center, r = wedges[8].center, wedges[8].r
+bar_height = sum(ListNbAsicsOther)
+# draw top connecting line
+x = r * np.cos(np.pi / 180 * theta2) + center[0]
+y = r * np.sin(np.pi / 180 * theta2) + center[1]
+con = ConnectionPatch(xyA=(-width / 2, bar_height), coordsA=ax2.transData,
+                      xyB=(x, y), coordsB=ax1.transData)
+con.set_color('grey')
+con.set_linewidth(1)
+ax2.add_artist(con)
+# draw bottom connecting line
+x = r * np.cos(np.pi / 180 * theta1) + center[0]
+y = r * np.sin(np.pi / 180 * theta1) + center[1]
+con = ConnectionPatch(xyA=(-width / 2, 0), coordsA=ax2.transData,
+                      xyB=(x, y), coordsB=ax1.transData)
+con.set_color('grey')
+ax2.add_artist(con)
+con.set_linewidth(1)
+
+
+# Graph Bar 
+fig, ax = plt.subplots(figsize=(13, 8))
+fig.patch.set_facecolor(backColor)
+plt.bar(ListCompany,ListNbAsics, width = 0.7, color=colors)
+plt.title('Number of ASICs created by Company', loc ='center',fontweight='bold', fontsize='18', color='w')
+plt.xlabel('Companies', fontweight='bold', color = 'w', fontsize='14', horizontalalignment='center')
+plt.xticks(range(len(ListCompany)), ListCompany)
+plt.ylabel('Number of ASICs', fontweight='bold', color = "w", fontsize='14', horizontalalignment='center')
+ax.grid(axis = 'y', color='grey');
+ax.tick_params(colors='w', labelsize=12)
+ax.set_facecolor(backColor)
+ax.xaxis.set_label_coords(0.5, -0.08)
+ax.yaxis.set_label_coords(-0.05, 0.5)
+ax.spines["top"].set_visible(False)
+ax.spines["right"].set_visible(False)
+ax.spines["left"].set_visible(False)
+
+plt.show()
