@@ -1,0 +1,122 @@
+# New Addresses Bitcoin/Ethereum by Year
+# The number of unique addresses that appeared for the first time in a transaction in the network.
+import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
+import numpy as np
+import pandas as pd
+import requests
+# Variables
+API_KEY = 'xxxxx'
+pathAPI = 'https://api.glassnode.com'
+# 2022-08-01 02:00:00 (UnixTime)
+# for collect all data of july 
+unixTimeLastMonth = 1659312000
+xlabelName = ['2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022']
+xlabelNameETH = ['2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022']
+i=0
+
+backColor = '#001219'
+backGraphColor = '#ADB5BD'
+barBTCcolor = '#e09f3e'
+barETHcolor = '#0053C1'
+
+# Function for format yLabel in Graph
+def millions(x, pos):
+    return '{:1.0f}M'.format(x*1e-6)
+formatter_mil = FuncFormatter(millions)
+# API New Addresses Bitcoin by month
+res = requests.get(pathAPI + '/v1/metrics/addresses/new_non_zero_count', 
+                   params={'a': 'BTC', 'u': unixTimeLastMonth, 'i': '1month', 'api_key': API_KEY})
+# convert to pandas dataframe and collect min/max values
+df = pd.read_json(res.text, convert_dates=['t'])
+dataBtc2022 = int(df[-7:].sum())
+# Group by Year 
+df = df[:-7].groupby(pd.Grouper(key='t', axis=0, freq='Y')).sum()
+listDataBTC = df['v'].to_numpy()
+listDataBTC = list(listDataBTC)
+listDataBTC.append(dataBtc2022)
+
+
+# API New Addresses ETH by month
+res = requests.get(pathAPI + '/v1/metrics/addresses/new_non_zero_count', 
+                   params={'a': 'ETH', 'u': unixTimeLastMonth, 'i': '1month', 'api_key': API_KEY})
+# convert to pandas dataframe and collect min/max values
+df = pd.read_json(res.text, convert_dates=['t'])
+dataEth2022 = int(df[-7:].sum())
+# Group by Year 
+df = df[:-7].groupby(pd.Grouper(key='t', axis=0, freq='Y')).sum()
+list_1 = np.full(6, 0)
+listDataETH_1 = df['v'].to_numpy()
+listDataETH_1 = list(listDataETH_1)
+listDataETH_1.append(dataEth2022)
+listDataETH_2 = np.concatenate((list_1, listDataETH_1), axis=None)
+listDataETH_2 = list(listDataETH_2)
+
+
+#Graph BTC
+fig, ax = plt.subplots(figsize=(13, 8))
+fig.patch.set_facecolor(backColor)
+plt.bar(xlabelName, listDataBTC, width = 0.5, color='#e09f3e')
+plt.title('Number of unique BTC addresses that appeared for the first time in a transaction (by year)', loc ='center',fontweight='bold', fontsize='16', color='w')
+plt.xlabel('Years', fontweight='bold', color = '#E16036', fontsize='14', horizontalalignment='center')
+plt.xticks(range(len(xlabelName)), xlabelName)
+plt.ylabel('New Addresses (Millions)', fontweight='bold', color = '#E16036', fontsize='14', horizontalalignment='center')
+plt.legend(["New Addresses BTC"], loc='upper center');
+ax.grid(axis = 'y', color='black');
+ax.tick_params(colors='w', labelsize=12)
+ax.set_facecolor(backGraphColor)
+ax.yaxis.set_major_formatter(formatter_mil)
+
+#Graph ETH 
+fig, ax = plt.subplots(figsize=(13, 8))
+fig.patch.set_facecolor(backColor)
+plt.bar(xlabelNameETH, listDataETH_1, width = 0.5, color='#0053C1')
+plt.title('Number of unique ETH addresses that appeared for the first time in a transaction (by year)', loc ='center',fontweight='bold', fontsize='16', color='w')
+plt.xlabel('Years', fontweight='bold', color = '#E16036', fontsize='14', horizontalalignment='center')
+plt.xticks(range(len(xlabelNameETH)), xlabelNameETH)
+plt.ylabel('New Addresses (Millions)', fontweight='bold', color = '#E16036', fontsize='14', horizontalalignment='center')
+plt.legend(["New Addresses ETH"], loc='upper center');
+ax.grid(axis = 'y', color='black');
+ax.tick_params(colors='w', labelsize=12)
+ax.set_facecolor(backGraphColor)
+ax.yaxis.set_major_formatter(formatter_mil)
+
+
+#Graph BTC / ETH 
+fig, ax = plt.subplots(figsize=(13, 8))
+fig.patch.set_facecolor(backColor)
+ax.bar(xlabelName, listDataBTC, width=0.75, label='BTC', color=barBTCcolor)
+ax.bar(xlabelName, listDataETH_2, width=0.75,bottom=listDataBTC, label='ETH', color=barETHcolor)
+ax.grid(axis = 'y', color='black');
+ax.set_facecolor(backGraphColor)
+ax.tick_params(colors='w', labelsize=12)
+ax.yaxis.set_major_formatter(formatter_mil)
+plt.title('Distribution of number of unique BTC / ETH addresses that appeared for the first time in a transaction (by year)', loc ='center',fontweight='bold', fontsize='16', color='w')
+plt.xlabel('Years', fontweight='bold', color = '#E16036', fontsize='14', horizontalalignment='center')
+plt.xticks(range(len(xlabelName)), xlabelName)
+plt.ylabel('New Addresses (Millions)', fontweight='bold', color = '#E16036', fontsize='14', horizontalalignment='center')
+plt.legend(["BTC", "ETH"], loc='upper left');
+# Make percentage
+for bar in ax.patches:
+  if i == len(listDataBTC):
+    i=0
+  
+  totalVal = listDataBTC[i] + listDataETH_2[i]
+  height = bar.get_height()
+  width = bar.get_width()
+  x = bar.get_x()
+  y = bar.get_y()
+  
+  percent = (height * 100) / totalVal
+  percent = round(percent,1)
+  if percent == 100 or percent == 0:
+    label_text = ''
+  else: 
+    label_text = str(percent) + '%'
+    
+  label_x = x + width / 2
+  label_y = y + height / 2
+  ax.text(label_x, label_y, label_text, ha='center', va='center', color='w', fontweight='bold')
+ 
+  i=i+1
+plt.show()
