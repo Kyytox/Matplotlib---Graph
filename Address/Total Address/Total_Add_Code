@@ -1,0 +1,92 @@
+# The total number of unique addresses that ever appeared in a transaction of the native coin in the network.
+import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
+import numpy as np
+import pandas as pd
+import requests
+# Function for format yLabel in Graph
+def millions(x, pos):
+    return '{:1.0f}M'.format(x*1e-7)
+formatterMil = FuncFormatter(millions)
+# Variables
+API_KEY = '2D0Dz5GSWhWqx35fu09qkQytwPa'
+pathAPI = 'https://api.glassnode.com/v1/metrics/addresses/count'
+# 2021-08-01 02:00:00 (UnixTime)
+# for collect all data until August 2021, because API noPremium 
+unixTimeUntil = 1627776000
+listAsset = ['BTC', 'ETH', 'LTC', 'AVAX']
+listDataAvaxFin = [0, 117, 143, 168, 295, 15424, 43517, 62240, 99409, 118130, 124043, 137932, 194062, 311920, 
+                739015, 1263898, 1668287, 1995117, 2291479, 2530292, 2807846, 2997588, 3209859]
+listData = []
+i = 0
+totalResult = 3209859
+backColor = '#001219'
+backGraphColor = '#ADB5BD'
+
+
+for asset in listAsset:
+  # API New Addresses Bitcoin by month
+  if i < 3:
+    res = requests.get(pathAPI, params={'a': asset, 'i': '1month', 'api_key': API_KEY})
+    # convert to pandas dataframe and collect min/max values
+    df = pd.read_json(res.text, convert_dates=['t'])
+    dfMax = df.iloc[-1,1]
+    listData.append(dfMax)
+    totalResult = totalResult + dfMax
+    i = i + 1
+    if asset == 'BTC':
+      dfLenBtc = len(df)
+      listDataBtc = df['v'].to_numpy()
+      listDataDate = df['t'].to_numpy()
+    elif asset == 'ETH':
+      # Add 0 for complete listData because the number of ligne between BTC ETH LTC are differents
+      array_1 = np.full(dfLenBtc - len(df), 0)
+      array_2 = df['v'].to_numpy()
+      listDataEth = np.concatenate((array_1, array_2), axis=None)
+    elif asset == 'LTC':
+      array_1 = np.full(dfLenBtc - len(df), 0)
+      array_2 = df['v'].to_numpy()
+      listDataLtc = np.concatenate((array_1, array_2), axis=None)
+
+# add and formate data for AVAX 
+array_1 = np.full(dfLenBtc - len(listDataAvaxFin), 0)
+listDataAvax = np.concatenate((array_1, listDataAvaxFin), axis=None)
+listData.append(3209859)
+totalResult = str(format(totalResult, ","))
+# Creating color parameters
+colors = ('#e09f3e', '#0053C1', "#16DB93", "#E1082C")
+# Creating explode data
+explode = (0.1, 0.0, 0.15, 0.16)
+# Graph LINES
+fig, ax = plt.subplots(figsize=(10, 7))
+fig.patch.set_facecolor(backColor)
+#make Lines
+plt.plot(listDataDate, listDataBtc, label = "BTC", color = "#e09f3e", linewidth=3)
+plt.plot(listDataDate, listDataEth, label = "ETH", color = "#0053C1", linewidth=3)
+plt.plot(listDataDate, listDataLtc, label = "LTC", color = "#16DB93", linewidth=3)
+plt.plot(listDataDate, listDataAvax, label = "AVAX", color = "#E1082C", linewidth=3)
+plt.title('Evolution of total number of Addresses', loc ='center',fontweight='bold', fontsize='16', color='w')
+plt.ylabel('Number of Addresses', fontweight='bold', color = 'w', fontsize='14', horizontalalignment='center')
+plt.xlabel('Year', fontweight='bold', color = 'w', fontsize='14', horizontalalignment='center')
+ax.set_facecolor(backGraphColor)
+ax.grid(axis = 'y', color='black');
+ax.yaxis.set_major_formatter(formatter_mil)
+ax.tick_params(colors='w', labelsize=12)
+ax.legend(listAsset, title ="Assets Crypto", loc ="center left", bbox_to_anchor =(1, 0, 0.5, 1))
+plt.show()
+
+# graph PIE
+fig, ax = plt.subplots(figsize=(8, 8))
+fig.patch.set_facecolor(backColor)
+plt.pie(listData, 
+        labels = listAsset,
+        shadow = True,
+        colors = colors,
+        startangle = 20,
+        wedgeprops = {'linewidth': 0.5, 'edgecolor': "black"},
+        autopct = '%1.1f%%',
+        explode=explode,
+        textprops = dict(color ="WHITE", fontsize='12',fontweight ='bold'))
+plt.title("Percentage of total number of Addresses (" + totalResult + " Addresses)", loc ='center',fontweight='bold', fontsize='14', color='w')
+ax.legend(listAsset, title ="Assets Crypto", loc ="upper left", bbox_to_anchor =(1, 0, 0.5, 1))
+plt.show()
